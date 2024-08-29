@@ -1,8 +1,8 @@
 {
 	//组件自动导入的规则
 	"easycom": {
-		"autoscan": true,
-		"custom": {
+		"autoscan": true,//是否开启组件自动扫描
+		"custom": {//以正则方式自定义匹配规则
 			// uni-ui 规则如下配置
 			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
 			//全局引入swiper组件
