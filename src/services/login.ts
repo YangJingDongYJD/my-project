@@ -18,7 +18,7 @@ export const postLoginWxMinAPI = (data:LoginParams) => {
 }
 
 //模拟登录
-export const postLoginWxMinSimpleAPI = (phoneNumber:s) => {
+export const postLoginWxMinSimpleAPI = (phoneNumber:string) => {
 	return http<LoginResult>({
 		method: 'POST',
 		url:'/login/wxMin/simple',
