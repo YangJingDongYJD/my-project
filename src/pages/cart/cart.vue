@@ -1,14 +1,15 @@
 <script setup lang="ts">
 	import { onShow } from '@dcloudio/uni-app';
-	import { deleteMemberCartAPI, 
-	         getMemberCartAPI, 
-			 putMemberCartBySkuIdAPI,
-			 putMemberCartSelectedAPI
-		   } from '@/services/cart';
+	import {
+		deleteMemberCartAPI,
+		getMemberCartAPI,
+		putMemberCartBySkuIdAPI,
+		putMemberCartSelectedAPI
+	} from '@/services/cart';
 	import { useMemberStore } from '@/stores';
 	import type { CartItem } from '@/types/cart';
 	import { computed, ref } from 'vue';
-    import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box';
+	import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box';
 
 	//获取会员列表
 	const memberStore = useMemberStore();
@@ -44,23 +45,23 @@
 	}
 
 	//商品数量修改
-	const onChangeCount = (ev:InputNumberBoxEvent) => {
-		putMemberCartBySkuIdAPI(ev.index,{count:ev.value})
+	const onChangeCount = (ev : InputNumberBoxEvent) => {
+		putMemberCartBySkuIdAPI(ev.index, { count: ev.value })
 	}
-	
+
 	//商品选中状态
-	const onChangeSelected = (item:CartItem) => {
+	const onChangeSelected = (item : CartItem) => {
 		//选中状态取反
 		item.selected = !item.selected;
 		//后端数据修改
-		putMemberCartBySkuIdAPI(item.skuId,{selected:item.selected});
+		putMemberCartBySkuIdAPI(item.skuId, { selected: item.selected });
 	}
-	
+
 	//计算全选状态
 	const isSelectedAll = computed(() => {
-	   return cartList.value.length && cartList.value.every((v) => v.selected);
+		return cartList.value.length && cartList.value.every((v) => v.selected);
 	})
-	
+
 	//全选状态修改
 	const onChangeSelectedAll = () => {
 		//获取当前选中状态
@@ -70,7 +71,36 @@
 			item.selected = _isSelectedAll;
 		})
 		//后端数据修改
-		putMemberCartSelectedAPI({selected : _isSelectedAll})
+		putMemberCartSelectedAPI({ selected: _isSelectedAll })
+	}
+
+	//计算选中商品列表
+	const selectedCarList = computed(() => {
+		return cartList.value.filter(v => v.selected);
+	})
+
+	//计算选中的总件数
+	const selectedCarListCount = computed(() => {
+		return selectedCarList.value.reduce((sum, item) => sum + item.count, 0)
+	})
+
+	//计算总价
+	const selectedCartListMoney = computed(() => {
+		return selectedCarList.value.reduce((sum, item) => sum + item.count * item.nowPrice, 0)
+	})
+
+	//去结算时间
+	const gotoPayment = () => {
+		if (selectedCarListCount.value === 0) {
+			return uni.showToast({
+				icon: 'none',
+				title: '请选择商品'
+			})
+		}
+		//跳转结算页面
+		uni.showToast({
+			title: '等待完成'
+		})
 	}
 </script>
 
@@ -92,7 +122,8 @@
 						<!-- 商品信息 -->
 						<view class="goods">
 							<!-- 选中状态 -->
-							<text @tap="onChangeSelected(item)" class="checkbox" :class="{ checked: item.selected }"></text>
+							<text @tap="onChangeSelected(item)" class="checkbox"
+								:class="{ checked: item.selected }"></text>
 							<navigator :url="`/pages/goods/goods?id=${item.id}`" hover-class="none" class="navigator">
 								<image mode="aspectFill" class="picture" :src="item.picture">
 								</image>
@@ -129,9 +160,12 @@
 			<view class="toolbar">
 				<text @tap="onChangeSelectedAll" class="all" :class="{ checked: isSelectedAll }">全选</text>
 				<text class="text">合计:</text>
-				<text class="amount">100</text>
+				<text class="amount">{{selectedCartListMoney}}</text>
 				<view class="button-grounp">
-					<view class="button payment-button" :class="{ disabled: true }"> 去结算(10) </view>
+					<view @tap="gotoPayment" class="button payment-button"
+						:class="{ disabled: selectedCarListCount === 0 }">
+						去结算({{selectedCarListCount}})
+					</view>
 				</view>
 			</view>
 		</template>
