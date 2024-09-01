@@ -1,8 +1,9 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue'
-	import {getMemberOrderPreAPI} from '@/services/order'
-    import { onLoad, onShow } from '@dcloudio/uni-app';
-    import type { OrderPreResult } from '@/types/order';
+	import { getMemberOrderPreAPI } from '@/services/order'
+	import { onLoad, onShow } from '@dcloudio/uni-app';
+	import type { OrderPreResult } from '@/types/order';
+	import { useAddressStore } from '@/stores/modules/address';
 
 	// 获取屏幕边界到安全区域距离
 	const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -34,76 +35,74 @@
 		//获取订单数据
 		getMemberOrderPreData();
 	})
+
+	//获取store中存储的地址
+	const addressStore = useAddressStore();
+	//计算收货地址
+	const selectedAddress = computed(() => {
+		//如果store中有显示store中的地址，负责显示数据默认的地址
+		return addressStore.selectedAddress || orderPreList.value?.userAddresses.find(v => v.isDefault)
+	})
 </script>
 
 <template>
 	<view class='viewport'>
-	<scroll-view 
-	  scroll-y 
-	  class="scroll-view"
-	>
-		<!-- 收货地址 -->
-		<navigator v-if="false" class="shipment" hover-class="none" url="/pagesMember/address/address?from=order">
-			<view class="user"> 张三 13333333333 </view>
-			<view class="address"> 广东省 广州市 天河区 黑马程序员3 </view>
-			<text class="icon icon-right"></text>
-		</navigator>
-		<navigator v-else class="shipment" hover-class="none" url="/pagesMember/address/address?from=order">
-			<view class="address"> 请选择收货地址 </view>
-			<text class="icon icon-right"></text>
-		</navigator>
-
-		<!-- 商品信息 -->
-		<view class="goods">
-			<navigator 
-			  v-for="item in orderPreList?.goods" 
-			  :key="item.skuId" 
-			  :url="`/pages/goods/goods?id=${item.id}`" 
-			  class="item" 
-			  hover-class="none"
-			>
-				<image 
-				  class="picture" 
-				  :src="item.picture" 
-				/>
-				<view class="meta">
-					<view class="name ellipsis"> {{item.name}} </view>
-					<view class="attrs">{{item.attrsText}}</view>
-					<view class="prices">
-						<view class="pay-price symbol">{{item.payPrice}}</view>
-						<view class="price symbol">{{item.price}}</view>
-					</view>
-					<view class="count">x{{item.count}}</view>
-				</view>
+		<scroll-view scroll-y class="scroll-view">
+			<!-- 收货地址 -->
+			<navigator v-if="selectedAddress" class="shipment" hover-class="none"
+				url="/pagesMember/address/address?from=order">
+				<view class="user"> {{selectedAddress.receiver}} {{selectedAddress.contact}} </view>
+				<view class="address"> {{selectedAddress.fullLocation}} {{selectedAddress.address}} </view>
+				<text class="icon icon-right"></text>
 			</navigator>
-		</view>
+			<navigator v-else class="shipment" hover-class="none" url="/pagesMember/address/address?from=order">
+				<view class="address"> 请选择收货地址 </view>
+				<text class="icon icon-right"></text>
+			</navigator>
 
-		<!-- 配送及支付方式 -->
-		<view class="related">
-			<view class="item">
-				<text class="text">配送时间</text>
-				<picker :range="deliveryList" range-key="text" @change="onChangeDelivery">
-					<view class="icon-fonts picker">{{ activeDelivery.text }}</view>
-				</picker>
+			<!-- 商品信息 -->
+			<view class="goods">
+				<navigator v-for="item in orderPreList?.goods" :key="item.skuId"
+					:url="`/pages/goods/goods?id=${item.id}`" class="item" hover-class="none">
+					<image class="picture" :src="item.picture" />
+					<view class="meta">
+						<view class="name ellipsis"> {{item.name}} </view>
+						<view class="attrs">{{item.attrsText}}</view>
+						<view class="prices">
+							<view class="pay-price symbol">{{item.payPrice}}</view>
+							<view class="price symbol">{{item.price}}</view>
+						</view>
+						<view class="count">x{{item.count}}</view>
+					</view>
+				</navigator>
 			</view>
-			<view class="item">
-				<text class="text">订单备注</text>
-				<input class="input" :cursor-spacing="30" placeholder="选题，建议留言前先与商家沟通确认" v-model="buyerMessage" />
-			</view>
-		</view>
 
-		<!-- 支付金额 -->
-		<view class="settlement">
-			<view class="item">
-				<text class="text">商品总价: </text>
-				<text class="number symbol">{{orderPreList.summary?.totalPrice.toFixed(2)}}</text>
+			<!-- 配送及支付方式 -->
+			<view class="related">
+				<view class="item">
+					<text class="text">配送时间</text>
+					<picker :range="deliveryList" range-key="text" @change="onChangeDelivery">
+						<view class="icon-fonts picker">{{ activeDelivery.text }}</view>
+					</picker>
+				</view>
+				<view class="item">
+					<text class="text">订单备注</text>
+					<input class="input" :cursor-spacing="30" placeholder="选题，建议留言前先与商家沟通确认" v-model="buyerMessage" />
+				</view>
 			</view>
-			<view class="item">
-				<text class="text">运费: </text>
-				<text class="number symbol">{{orderPreList.summary?.postFee.toFixed(2)}}</text>
+
+			<!-- 支付金额 -->
+			<view class="settlement">
+				<view class="item">
+					<text class="text">商品总价: </text>
+					<text class="number symbol">{{orderPreList.summary?.totalPrice.toFixed(2)}}</text>
+				</view>
+				<view class="item">
+					<text class="text">运费: </text>
+					<text class="number symbol">{{orderPreList.summary?.postFee.toFixed(2)}}</text>
+				</view>
 			</view>
-		</view>
-	</scroll-view>
+		</scroll-view>
 	</view>
 
 	<!-- 吸底工具栏 -->
@@ -121,13 +120,13 @@
 		flex-direction: column;
 		height: 100%;
 		background-color: #f4f4f4;
-		
+
 	}
-	
-	.viewport{
+
+	.viewport {
 		padding-bottom: 120rpx;
 	}
-	
+
 	// .scroll-view {
 	// 	flex: 1;
 	// }
