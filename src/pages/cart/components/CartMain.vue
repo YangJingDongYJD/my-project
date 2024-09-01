@@ -10,6 +10,14 @@
 	import type { CartItem } from '@/types/cart';
 	import { computed, ref } from 'vue';
 	import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box';
+    import { useGuessList } from '@/composables';
+	
+	const {safeAreaInsets } = uni.getSystemInfoSync();
+	//接收页面参数
+	const query = defineProps<{
+		type:string
+	}>()
+	
 	//获取会员列表
 	const memberStore = useMemberStore();
 	//获取购物车数据
@@ -90,10 +98,12 @@
 			title: '等待完成'
 		})
 	}
+	//调用猜你喜欢的的组合式函数
+	const {guessRef,onScrolltolower} = useGuessList();
 </script>
 
 <template>
-	<scroll-view scroll-y class="scroll-view">
+	<scroll-view scroll-y class="scroll-view" @scrolltolower="onScrolltolower">
 		<!-- 已登录: 显示购物车 -->
 		<template v-if="memberStore.profile">
 			<!-- 购物车列表 -->
@@ -145,7 +155,10 @@
 				</navigator>
 			</view>
 			<!-- 吸底工具栏 -->
-			<view class="toolbar">
+			<view 
+			  class="toolbar"
+			  :style="query?.type === 'cart' ? {marinBottom:safeAreaInsets.bottom + 'px'} : {paddingBottom:safeAreaInsets.bottom + 'px' }  "
+			>
 				<text @tap="onChangeSelectedAll" class="all" :class="{ checked: isSelectedAll }">全选</text>
 				<text class="text">合计:</text>
 				<text class="amount">{{selectedCartListMoney}}</text>

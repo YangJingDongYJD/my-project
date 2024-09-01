@@ -2,5 +2,5 @@
 	import CartMainVue from './components/CartMain.vue';
 </script>
 <template>
-	<CartMainVue />
+	<CartMainVue/>
 </template>

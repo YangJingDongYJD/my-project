@@ -20,10 +20,16 @@
     */
 	const {guessRef,onScrolltolower} = useGuessList();
 	
+	
 </script>
 
 <template>
-	<scroll-view @scrolltolower="onScrolltolower" class="viewport" scroll-y enable-back-to-top>
+	<scroll-view 
+	  @scrolltolower="onScrolltolower" 
+	  class="viewport" 
+	  scroll-y 
+	  enable-back-to-top
+	  >
 		<!-- 个人资料 -->
 		<view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
 			<!-- 情况1：已登录 -->

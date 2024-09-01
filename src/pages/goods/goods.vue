@@ -229,7 +229,10 @@
 	</scroll-view>
 
 	<!-- 用户操作 -->
-	<view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
+	<view 
+	  class="toolbar" 
+	  :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"
+	>
 		<view class="icons">
 			<button class="icons-button"><text class="icon-heart"></text>收藏</button>
 			<button class="icons-button" open-type="contact">
