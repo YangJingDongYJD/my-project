@@ -85,7 +85,7 @@
 	const selectedCartListMoney = computed(() => {
 		return selectedCarList.value.reduce((sum, item) => sum + item.count * item.nowPrice, 0)
 	})
-	//去结算时间
+	//去结算事件
 	const gotoPayment = () => {
 		if (selectedCarListCount.value === 0) {
 			return uni.showToast({
@@ -94,8 +94,8 @@
 			})
 		}
 		//跳转结算页面
-		uni.showToast({
-			title: '等待完成'
+		uni.navigateTo({
+			url:'/pagesOrder/create/create'
 		})
 	}
 	//调用猜你喜欢的的组合式函数
