@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue'
-	import { getMemberOrderPreAPI } from '@/services/order'
+	import { getMemberOrderPreAPI, getMemberOrderPreNowAPI } from '@/services/order'
 	import { onLoad, onShow } from '@dcloudio/uni-app';
 	import type { OrderPreResult } from '@/types/order';
 	import { useAddressStore } from '@/stores/modules/address';
@@ -24,11 +24,25 @@
 		activeIndex.value = ev.detail.value
 	}
 
+	//接收页面参数
+	const query = defineProps<{
+		skuId ?: string,
+		count ?: string,
+	}>()
+
 	//获取订单数据
 	const orderPreList = ref<OrderPreResult>()
 	const getMemberOrderPreData = async () => {
-		const res = await getMemberOrderPreAPI();
-		orderPreList.value = res.result;
+		if (query.skuId && query.count) {
+			const res = await getMemberOrderPreNowAPI({
+				skuId: query.skuId,
+				count: query.count,
+			})
+			orderPreList.value = res.result;
+		} else {
+			const res = await getMemberOrderPreAPI();
+			orderPreList.value = res.result;
+		}
 	}
 	//页面初始化
 	onShow(() => {
