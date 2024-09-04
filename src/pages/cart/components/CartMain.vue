@@ -161,7 +161,7 @@
 			>
 				<text @tap="onChangeSelectedAll" class="all" :class="{ checked: isSelectedAll }">全选</text>
 				<text class="text">合计:</text>
-				<text class="amount">{{selectedCartListMoney}}</text>
+				<text class="amount">{{selectedCartListMoney.toFixed(2)}}</text>
 				<view class="button-grounp">
 					<view @tap="gotoPayment" class="button payment-button"
 						:class="{ disabled: selectedCarListCount === 0 }">

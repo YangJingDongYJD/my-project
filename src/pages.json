@@ -134,12 +134,21 @@
 		},
 		{
 			"root": "pagesOrder",
-			"pages": [{
-				"path": "create/create",
-				"style": {
-					"navigationBarTitleText": "提交订单"
+			"pages": [
+				{
+					"path": "create/create",
+					"style": {
+						"navigationBarTitleText": "提交订单"
+					}
+				},
+				{
+					"path": "detail/detail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
 				}
-			}]
+			]
 		}
 	],
 	"preloadRule": {

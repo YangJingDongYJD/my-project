@@ -1,6 +1,6 @@
 <script setup lang="ts">
 	import { computed, ref } from 'vue'
-	import { getMemberOrderPreAPI, getMemberOrderPreNowAPI } from '@/services/order'
+	import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
 	import { onLoad, onShow } from '@dcloudio/uni-app';
 	import type { OrderPreResult } from '@/types/order';
 	import { useAddressStore } from '@/stores/modules/address';
@@ -23,13 +23,11 @@
 	const onChangeDelivery : UniHelper.SelectorPickerOnChange = (ev) => {
 		activeIndex.value = ev.detail.value
 	}
-
 	//接收页面参数
 	const query = defineProps<{
 		skuId ?: string,
 		count ?: string,
 	}>()
-
 	//获取订单数据
 	const orderPreList = ref<OrderPreResult>()
 	const getMemberOrderPreData = async () => {
@@ -49,7 +47,6 @@
 		//获取订单数据
 		getMemberOrderPreData();
 	})
-
 	//获取store中存储的地址
 	const addressStore = useAddressStore();
 	//计算收货地址
@@ -57,6 +54,27 @@
 		//如果store中有显示store中的地址，负责显示数据默认的地址
 		return addressStore.selectedAddress || orderPreList.value?.userAddresses.find(v => v.isDefault)
 	})
+	//提交订单
+	const onOrderSubmit = async() => {
+		if(!selectedAddress.value?.id){
+			return uni.showToast({icon:'none',title:'请选择说活地址'})
+		};
+		const res = await postMemberOrderAPI({
+			addressId: selectedAddress.value?.id,
+			deliveryTimeType: activeDelivery.value?.type,
+			buyerMessage: buyerMessage.value,
+			goods:orderPreList.value!.goods.map(v=> ({
+				count: v.count,
+				skuId: v.skuId
+			})),
+			payChannel:2,
+			payType:1,
+		})
+		//关闭当前页面，跳转到订单详情，传递订单id
+		uni.redirectTo({ 
+			url:'/pagesOrder/detail/detail?id=${res.result.id}'
+		})
+	}
 </script>
 
 <template>
@@ -122,9 +140,15 @@
 	<!-- 吸底工具栏 -->
 	<view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
 		<view class="total-pay symbol">
-			<text class="number">99.00</text>
+			<text class="number">{{orderPreList?.summary?.totalPrice.toFixed(2)}}</text>
 		</view>
-		<view class="button" :class="{ disabled: true }"> 提交订单 </view>
+		<view 
+		  class="button" 
+		  :class="{ disabled: !selectedAddress?.id }"
+		  @tap="onOrderSubmit"
+		> 
+		  提交订单 
+		</view>
 	</view>
 </template>
 
