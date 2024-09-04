@@ -13,7 +13,7 @@ export const getMemberOrderPreAPI = () => {
 export const getMemberOrderPreNowAPI = (data:{
 	skuId:string,
 	count:string,
-	addressId:string
+	addressId?:string
 }) => {
 	return http({
 		method:'GET',

@@ -34,7 +34,7 @@
 	const orderPreList = ref<OrderPreResult>()
 	const getMemberOrderPreData = async () => {
 		if (query.skuId && query.count) {
-			const res = await getMemberOrderPreNowAPI({
+			const res = await getMemberOrderPreNowAPI({		
 				skuId: query.skuId,
 				count: query.count,
 			})
@@ -109,11 +109,11 @@
 			<view class="settlement">
 				<view class="item">
 					<text class="text">商品总价: </text>
-					<text class="number symbol">{{orderPreList.summary?.totalPrice.toFixed(2)}}</text>
+					<text class="number symbol">{{orderPreList?.summary?.totalPrice.toFixed(2)}}</text>
 				</view>
 				<view class="item">
 					<text class="text">运费: </text>
-					<text class="number symbol">{{orderPreList.summary?.postFee.toFixed(2)}}</text>
+					<text class="number symbol">{{orderPreList?.summary?.postFee.toFixed(2)}}</text>
 				</view>
 			</view>
 		</scroll-view>

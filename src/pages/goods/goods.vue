@@ -9,6 +9,7 @@
 	import PageSkeleton from "./PageSkeleton.vue";
     import type { SkuPopupEvent, SkuPopupInstance, SkuPopupLocaldata } from "@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup";
     import {postMemberCartAPI} from "@/services/cart";
+    import { useAddressStore } from "@/stores/modules/address";
 
 	// 获取屏幕边界到安全区域距离
 	const { safeAreaInsets } = uni.getSystemInfoSync();
@@ -114,7 +115,13 @@
 	const selectArrText = computed(() => {
 		return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
 	})
-	
+	//获取store中存储的地址
+	const addressStore = useAddressStore();
+	//计算收货地址
+	const selectedAddress = computed(() => {
+		//如果store中有显示store中的地址，否则显示请选择地址
+		return addressStore.selectedAddress?.fullLocation || '请选择地址'
+	})
 	//加入购物车时间
 	const onAddCart = async(ev:SkuPopupEvent) => {
 	  await postMemberCartAPI({skuId:ev._id,count:ev.buy_num});
@@ -123,6 +130,7 @@
 	  });
 	  isShowSku.value = false;
 	}
+	
 	//立即购买
 	const onBuyNow = (ev:SkuPopupEvent) => {
 		uni.navigateTo({
@@ -184,7 +192,7 @@
 					</view>
 					<view class="item arrow" @tap="openPopup('address')">
 						<text class="label">送至</text>
-						<text class="text ellipsis"> 请选择收获地址 </text>
+						<text class="text ellipsis"> {{selectedAddress}} </text>
 					</view>
 					<view class="item arrow" @tap="openPopup('service')">
 						<text class="label">服务</text>
@@ -257,7 +265,7 @@
 
 	<!-- 底部弹出层 -->
 	<uni-popup ref='popup' type="bottom" background-color="#fff">
-		<AddressPanel v-if="popupName === 'address'" @close="popup?.close()" />
+		<AddressPanel :address="goodsList?.userAddresses" v-if="popupName === 'address'" @close="popup?.close()" />
 		<ServicePanel v-if="popupName === 'service'" @close="popup?.close()" />
 		<button @tap="popup?.close()">关闭弹出层</button>
 	</uni-popup>
