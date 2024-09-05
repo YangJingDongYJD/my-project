@@ -1,9 +1,9 @@
 <script setup lang="ts">
-	import { onLoad, onReady } from '@dcloudio/uni-app';
+	import { onLoad, onReady, onShow } from '@dcloudio/uni-app';
 	import { useGuessList } from '@/composables'
 	import { ref } from 'vue'
-	import { getMemberOrderAPI } from '@/services/order';
-	import {getPayWxPayMiniPayAPI,getPayMockAPI} from '@/services/pay';
+	import { getMemberOrderAPI, getMemberOrderConsignmentByIdAPI, putMemberOrderReceiptByIdAPI } from '@/services/order';
+	import { getPayWxPayMiniPayAPI, getPayMockAPI } from '@/services/pay';
 	import type { OrderResult } from '@/types/order';
 	import { OrderState, orderStateList } from '@/services/constants';
 	import PageSkeleton from "./PageSkeleton.vue";
@@ -73,9 +73,9 @@
 		const res = await getMemberOrderAPI(query?.id);
 		order.value = res.result;
 	}
-	
+
 	//页面初始化
-	onLoad( async() => {
+	onShow(async () => {
 		//获取订单详情数据
 		await getMemberOrderData();
 	})
@@ -85,18 +85,43 @@
 		order.value!.orderState = OrderState.YiQuXiao;
 	}
 	//订单支付
-	const onOrderPay = async() => {
-		if(import.meta.env.DEV){
+	const onOrderPay = async () => {
+		if (import.meta.env.DEV) {
 			//开发坏境支付
-			getPayMockAPI({orderId:query.id});
-		}else{
+			getPayMockAPI({ orderId: query.id });
+		} else {
 			//正式支付
-			const res = await getPayWxPayMiniPayAPI({orderId:query.id});
+			const res = await getPayWxPayMiniPayAPI({ orderId: query.id });
 			wx.requestPayment(res.result);
 			//关闭当前页面，再跳转支付页面
 		}
 		uni.redirectTo({
-			url:`/pagesOrder/payment/payment?id=${query.id}`
+			url: `/pagesOrder/payment/payment?id=${query.id}`
+		})
+	}
+	//是否为开发环境
+	const isDev = import.meta.env.DEV;
+	//模拟发货
+	const onOrderSend = async () => {
+		if (isDev) {
+			await getMemberOrderConsignmentByIdAPI(query.id);
+			uni.showToast({ icon: 'success', title: '模拟发货完成' })
+			//主动更新订单状态
+			order.value!.orderState = OrderState.DaiShouHuo;
+		}
+	}
+	//确认收货
+	const onOrderConfirm = () => {
+		//二次确认弹窗
+		uni.showModal({
+			content: '为保障您的权益，请收到货并确认无误后，再确认收货',
+			success: async(success) => {
+				if (success.confirm) {
+					const res = await putMemberOrderReceiptByIdAPI(query.id);
+					//更新订单状态
+					order.value = res.result;
+				}
+			}
 		})
 	}
 </script>
@@ -122,14 +147,8 @@
 						<text class="money">应付金额: ¥ 99.00</text>
 						<text class="time">支付剩余</text>
 						<!-- 倒计时组件 -->
-						<uni-countdown 
-						    :second="order.countdown" 
-							color="#fff" 
-							splitor-color="#fff" 
-							:show-day="false"
-							:show-colon="false"
-							 @timeup="onTimeup"
-						/>
+						<uni-countdown :second="order.countdown" color="#fff" splitor-color="#fff" :show-day="false"
+							:show-colon="false" @timeup="onTimeup" />
 					</view>
 					<view class="button" @tap="onOrderPay">去支付</view>
 				</template>
@@ -143,7 +162,13 @@
 							再次购买
 						</navigator>
 						<!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-						<view v-if="false" class="button"> 模拟发货 </view>
+						<view v-if="isDev && order.orderState == OrderState.DaiFaHuo" class="button" @tap="onOrderSend">
+							模拟发货
+						</view>
+						<!-- 待收货状态：展示确认收货按钮-->
+						<view v-if="order.orderState === OrderState.DaiShouHuo" class="button" @tap="onOrderConfirm">
+							确认收货
+						</view>
 					</view>
 				</template>
 			</view>
@@ -165,16 +190,9 @@
 			<!-- 商品信息 -->
 			<view class="goods">
 				<view class="item">
-					<navigator 
-					  class="navigator" 
-					  v-for="item in order?.skus" 
-					  :key="item.id" 
-					  :url="`/pages/goods/goods?id=${item.id}`"
-					  hover-class="none"
-					>
-						<image class="cover"
-						  :src="item.image"
-						>
+					<navigator class="navigator" v-for="item in order?.skus" :key="item.id"
+						:url="`/pages/goods/goods?id=${item.id}`" hover-class="none">
+						<image class="cover" :src="item.image">
 						</image>
 						<view class="meta">
 							<view class="name ellipsis">{{item.name}}</view>
