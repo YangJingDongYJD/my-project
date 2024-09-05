@@ -5,7 +5,8 @@
 	import { getMemberOrderAPI } from '@/services/order';
 	import {getPayWxPayMiniPayAPI,getPayMockAPI} from '@/services/pay';
 	import type { OrderResult } from '@/types/order';
-	import { OrderState, orderStateList } from '@/services/constants'
+	import { OrderState, orderStateList } from '@/services/constants';
+	import PageSkeleton from "./PageSkeleton.vue";
 
 	// 获取屏幕边界到安全区域距离
 	const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -72,10 +73,11 @@
 		const res = await getMemberOrderAPI(query?.id);
 		order.value = res.result;
 	}
+	
 	//页面初始化
-	onLoad(() => {
+	onLoad( async() => {
 		//获取订单详情数据
-		getMemberOrderData();
+		await getMemberOrderData();
 	})
 	//倒计时结束的事件
 	const onTimeup = () => {
@@ -86,7 +88,7 @@
 	const onOrderPay = async() => {
 		if(import.meta.env.DEV){
 			//开发坏境支付
-			await getPayMockAPI({orderId:query.id});
+			getPayMockAPI({orderId:query.id});
 		}else{
 			//正式支付
 			const res = await getPayWxPayMiniPayAPI({orderId:query.id});
@@ -160,7 +162,6 @@
 					<view class="address"> {{order.receiverAddress}}</view>
 				</view>
 			</view>
-
 			<!-- 商品信息 -->
 			<view class="goods">
 				<view class="item">
@@ -209,7 +210,6 @@
 					</view>
 				</view>
 			</view>
-
 			<!-- 订单信息 -->
 			<view class="detail">
 				<view class="title">订单信息</view>
@@ -220,10 +220,8 @@
 					<view class="item">下单时间: {{order?.payLatestTime}}</view>
 				</view>
 			</view>
-
 			<!-- 猜你喜欢 -->
 			<GlobalGuess ref="guessRef" />
-
 			<!-- 底部操作栏 -->
 			<view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
 			<view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
