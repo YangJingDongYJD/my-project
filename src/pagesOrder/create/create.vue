@@ -72,7 +72,7 @@
 		})
 		//关闭当前页面，跳转到订单详情，传递订单id
 		uni.redirectTo({ 
-			url:'/pagesOrder/detail/detail?id=${res.result.id}'
+			url:`/pagesOrder/detail/detail?id=${res.result.id}`
 		})
 	}
 </script>
