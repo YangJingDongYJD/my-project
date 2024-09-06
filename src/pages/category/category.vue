@@ -6,7 +6,7 @@
     import { getHomeBannerAPI } from '@/services/home';
 	import { getCategoryTopAPI } from '@/services/category';
     import { onLoad } from '@dcloudio/uni-app';
-	import PageSkeleton from "./PageSkeleton.vue"
+	import PageSkeleton from "./PageSkeleton.vue";
 	
 	//获取轮播图数据
     const bannerList = ref<BannerItem[]>([]);
@@ -44,6 +44,7 @@
 
 <template>
   <view class="viewport" v-if="isFinish">
+	  {{activeIndex}}
     <!-- 搜索框 -->
     <view class="search">
       <view class="input">

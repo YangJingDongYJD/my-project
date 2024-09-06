@@ -11,9 +11,10 @@
 		<navigator 
 		  class="category-item" 
 		  hover-class="none" 
-		  url="pages/index/index" 
 		  v-for="item in list" 
-		  :key="item.id">
+		  :key="item.id"
+		  url="/pages/index/index"
+		 >
 			<image 
 			  class="icon" 
 			  :src="item.icon"
