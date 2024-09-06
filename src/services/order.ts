@@ -64,3 +64,14 @@ export const putMemberOrderReceiptByIdAPI = (id: string) => {
   })
 }
 
+/**
+ * 获取订单物流
+ * @description 仅在订单状态为待收货，待评价，已完成时，可获取物流信息。
+ * @param id 订单id
+ */
+export const getMemberOrderLogisticsByIdAPI = (id: string) => {
+  return http<OrderLogisticResult>({
+    method: 'GET',
+    url: `/member/order/${id}/logistics`,
+  })
+}
